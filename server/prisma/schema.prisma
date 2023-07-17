@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+model Users {
+    Id String @id
+    FullName String @db.Text
+    Username String
+    password String
+    email String @unique
+    phoneNo String
+    Role String
+    Store Stores[] 
+    Product Products[]
+    Saler Sales[]
+    Expenser Expenses[]
+    MessagReciever Message[] @relation(name:"Receiver")
+    MessageSender Message[] @relation(name:"Sender")
+
+  }
+
+  model Stores {
+    Id String @id   
+    Name String
+    Address String
+    ContactPerson String
+    MobileNumber String
+    User Users @relation(fields: [ContactPerson],references: [Id])
+    Product Products[]
+    @@index([ContactPerson])
+}
+
+model Products {
+  Id String @id
+  Name String
+  CatagoryId String 
+  Description String @db.Text  
+  Quantity Int
+  PurchasePrice Decimal
+  SalesPrice Decimal
+  Priority String 
+  Size Decimal 
+  Color String
+  SafetyStock Int 
+  StoreId String
+  AddedBy String 
+  AddedDate DateTime @db.Date
+  Category ProductCatagory @relation(fields: [CatagoryId],references: [Id])
+  Store Stores @relation(fields: [StoreId],references: [Id])
+  User Users @relation(fields: [AddedBy],references: [Id] )
+  @@index([CatagoryId])
+  @@index([StoreId])
+  @@index([AddedBy])
+}
+
+model ProductCatagory{ 
+    Id String @id
+    Name String
+    Description String @db.Text
+    Product Products[]
+    }
+
+model Sales {
+    Id String @id
+    ProductId String
+    Quantity Int
+    SaleDateTime DateTime @db.Date
+    SalerId String
+    User Users @relation(fields: [SalerId],references: [Id])
+    @@index([SalerId])
+  }
+
+
+model ExpenseCatagory {
+    Id String @id
+    Name String
+    Description String @db.Text
+    Expense Expenses[]
+    }
+
+model Expenses {    
+    Id String @id
+    ExpenseCatagory String 
+    Amount Decimal
+    Description String @db.Text
+    ExpenseDate DateTime @db.Date
+    ExpenseBy String @unique
+    Category ExpenseCatagory @relation(fields: [ExpenseCatagory],references: [Id])
+    User Users @relation(fields: [ExpenseBy],references: [Id])
+    @@index([ExpenseBy])
+    @@index([ExpenseCatagory])
+
+   }
+
+
+model Message {
+    Id String @id
+    subject String @db.Text
+    Message String @db.Text
+    sendBy String   
+    recievedBy String
+    messageDate DateTime @db.Date
+    Sender Users @relation(name:"Sender",fields: [sendBy],references: [Id])
+    Receiver Users @relation(name:"Receiver",fields: [recievedBy],references: [Id])
+    @@index([sendBy])
+    @@index([recievedBy])    
+}
+
+
