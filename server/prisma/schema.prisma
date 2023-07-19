@@ -6,28 +6,29 @@ datasource db {
   url = env("DATABASE_URL")
   relationMode = "prisma"
 }
+
 model Users {
-    Id String @id
-    FullName String @db.Text
+    Id String @id @db.VarChar(36)
+    FullName String
     Username String
     password String
+    Image String? @db.Text
     email String @unique
     phoneNo String
     Role String
-    Store Stores[] 
+    Store Stores[]
     Product Products[]
     Saler Sales[]
     Expenser Expenses[]
     MessagReciever Message[] @relation(name:"Receiver")
     MessageSender Message[] @relation(name:"Sender")
-
   }
 
   model Stores {
-    Id String @id   
+    Id String @id @db.VarChar(36)   
     Name String
-    Address String
-    ContactPerson String
+    Address String 
+    ContactPerson String  @db.VarChar(36)   
     MobileNumber String
     User Users @relation(fields: [ContactPerson],references: [Id])
     Product Products[]
@@ -35,60 +36,64 @@ model Users {
 }
 
 model Products {
-  Id String @id
+  Id String @id @db.VarChar(36)
   Name String
-  CatagoryId String 
-  Description String @db.Text  
+  Image String? @db.Text
+  CatagoryId String @db.VarChar(36)
+  Description String? @db.LongText
   Quantity Int
   PurchasePrice Decimal
   SalesPrice Decimal
+  SupplierId String @db.VarChar(36)
   Priority String 
   Size Decimal 
   Color String
   SafetyStock Int 
-  StoreId String
-  AddedBy String 
+  StoreId String @db.VarChar(36)
+  AddedBy String  @db.VarChar(36)
   AddedDate DateTime @db.Date
   Category ProductCatagory @relation(fields: [CatagoryId],references: [Id])
   Store Stores @relation(fields: [StoreId],references: [Id])
+  Inventory Inventory[]
   User Users @relation(fields: [AddedBy],references: [Id] )
+  Supplier Suppliers @relation(fields: [SupplierId],references: [Id])
   @@index([CatagoryId])
   @@index([StoreId])
   @@index([AddedBy])
+  @@index([SupplierId])
 }
 
 model ProductCatagory{ 
-    Id String @id
+    Id String @id @db.VarChar(36)
     Name String
-    Description String @db.Text
+    Description String? @db.LongText
     Product Products[]
     }
 
 model Sales {
-    Id String @id
-    ProductId String
+    Id String @id @db.VarChar(36)
+    ProductId String @db.VarChar(36)
     Quantity Int
     SaleDateTime DateTime @db.Date
-    SalerId String
+    SalerId String @db.VarChar(36)
     User Users @relation(fields: [SalerId],references: [Id])
     @@index([SalerId])
   }
 
-
 model ExpenseCatagory {
-    Id String @id
+    Id String @id @db.VarChar(36)
     Name String
-    Description String @db.Text
+    Description String? @db.LongText
     Expense Expenses[]
     }
 
 model Expenses {    
-    Id String @id
-    ExpenseCatagory String 
+    Id String @id @db.VarChar(36)
+    ExpenseCatagory String @db.VarChar(36)
     Amount Decimal
-    Description String @db.Text
+    Description String? @db.LongText
     ExpenseDate DateTime @db.Date
-    ExpenseBy String @unique
+    ExpenseBy String @unique @db.VarChar(36)
     Category ExpenseCatagory @relation(fields: [ExpenseCatagory],references: [Id])
     User Users @relation(fields: [ExpenseBy],references: [Id])
     @@index([ExpenseBy])
@@ -96,13 +101,12 @@ model Expenses {
 
    }
 
-
 model Message {
-    Id String @id
-    subject String @db.Text
-    Message String @db.Text
-    sendBy String   
-    recievedBy String
+    Id String @id @db.VarChar(36)
+    subject String? @db.Text
+    Message String? @db.Text
+    sendBy String @db.VarChar(36) 
+    recievedBy String @db.VarChar(36)
     messageDate DateTime @db.Date
     Sender Users @relation(name:"Sender",fields: [sendBy],references: [Id])
     Receiver Users @relation(name:"Receiver",fields: [recievedBy],references: [Id])
@@ -110,4 +114,30 @@ model Message {
     @@index([recievedBy])    
 }
 
+model Inventory {
+  Id String @id @db.VarChar(36)
+  ProductId String @db.VarChar(36)
+  Stock Decimal
+  PreviousTotalStock Decimal
+  Product Products @relation(fields: [ProductId],references: [Id])
+  @@index([ProductId])
+}
 
+
+model Suppliers {
+  Id String @id @db.VarChar(36)
+  Name String 
+  Image String  @db.Text
+  ContactPerson String
+  AddressId String @db.VarChar(36) 
+  PhoneNo String  
+  Product Products[]
+  Address SupplierAddresses @relation(fields: [AddressId],references: [Id])
+  @@index([AddressId])
+}
+model SupplierAddresses{
+  Id String @id @db.VarChar(36)
+  Address String  @db.Text
+  city String 
+  Supplier Suppliers[]
+}
